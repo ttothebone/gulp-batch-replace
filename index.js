@@ -1,15 +1,14 @@
 var es = require('event-stream');
+var gutil = require('gulp-util');
+var iconv = require('iconv-lite');
 
-module.exports = function(arr) {
+module.exports = function(arr, encoding){
   var doReplace = function(file, callback) {
-
-
     var isStream = file.contents && typeof file.contents.on === 'function' && typeof file.contents.pipe === 'function';
     var isBuffer = file.contents instanceof Buffer;
+    encoding = encoding !== undefined ? encoding : 'utf8';
 
-
-    if (isStream)
-    {
+    if (isStream){
       file.contents = file.contents.pipe(es.map(function(chunk,cb){
         for( var i=0, max = arr.length; i<max; i++ ){
           var search  = arr[i][0],
@@ -18,30 +17,29 @@ module.exports = function(arr) {
           var isRegExp = search instanceof RegExp;
 
           var result = isRegExp
-          ? String( chunk ).replace( search, replace )
-          : String( chunk ).split( search ).join( replace );
+              ? String(chunk).replace(search, replace)
+              : String(chunk).split(search).join(replace);
           chunk = new Buffer(result);
-        };
+        }
         cb(null,chunk);
       }));
-    }
-
-    else if(isBuffer)
-
-    {
+    }else if(isBuffer) {
+      var bufferAsString = file.contents.toString('binary');
       for( var i=0, max = arr.length; i<max; i++ ){
         var search  = arr[i][0],
             replace = arr[i][1];
 
-        file.contents = search instanceof RegExp
-        ? new Buffer( String( file.contents ).replace( search, replace ) )
-        : new Buffer( String( file.contents ).split( search ).join( replace ) );
+        if(search instanceof RegExp){
+          bufferAsString = bufferAsString.replace(search, replace);
+        }else{
+          file.contents = new Buffer( String( file.contents ).split( search ).join( replace ) );
+        }
       }
     }
 
     callback(null,file);
   };
 
-
   return es.map(doReplace);
+
 };

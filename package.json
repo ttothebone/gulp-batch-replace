@@ -4,7 +4,8 @@
   "description": "A batch string/regexp replace plugin for gulp",
   "main": "index.js",
   "dependencies": {
-    "event-stream": "latest"
+    "event-stream": "latest",
+    "iconv-lite": "latest"
   },
   "devDependencies": {
     "should": "~2.1.1",
