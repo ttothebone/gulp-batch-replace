@@ -35,6 +35,9 @@ module.exports = function(arr, encoding){
           file.contents = new Buffer( String( file.contents ).split( search ).join( replace ) );
         }
       }
+	  if(search instanceof RegExp){
+		file.contents = iconv.encode(bufferAsString, encoding);
+      }
     }
 
     callback(null,file);
